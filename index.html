@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Node 订阅与节点中心</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 90%; max-width: 600px; }
+        h2 { margin-top: 0; color: #333; text-align: center; }
+        .box { margin-bottom: 15px; }
+        label { font-weight: bold; color: #555; font-size: 14px; display: block; margin-bottom: 5px; }
+        input[type="text"] { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 6px; background: #fafafa; font-size: 13px; }
+        .btn-group { display: flex; gap: 10px; margin-top: 5px; }
+        button { background: #1677ff; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; transition: 0.3s; flex: 1; }
+        button:hover { background: #0958d9; }
+        .success { background: #52c41a !important; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>🎉 节点与订阅中心</h2>
+        
+        <div class="box">
+            <label>当前随机 UUID：</label>
+            <input type="text" id="uuid" value="__UUID__" readonly>
+        </div>
+
+        <div class="box">
+            <label>v2rayN / 单节点链接：</label>
+            <input type="text" id="nodeLink" readonly>
+            <div class="btn-group">
+                <button onclick="copyText('nodeLink', this)">复制单节点</button>
+            </div>
+        </div>
+
+        <div class="box">
+            <label>v2rayN 订阅地址 ( /sub )：</label>
+            <input type="text" id="subLink" readonly>
+            <div class="btn-group">
+                <button onclick="copyText('subLink', this)">复制订阅地址</button>
+            </div>
+        </div>
+
+        <div class="box">
+            <label>Clash Verge / Mihomo 订阅地址 ( /sub?format=clash )：</label>
+            <input type="text" id="clashLink" readonly>
+            <div class="btn-group">
+                <button onclick="copyText('clashLink', this)">复制 Clash 订阅</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const host = window.location.host;
+        const protocol = window.location.protocol;
+        const uuid = "__UUID__";
+
+        const nodeUrl = `vless://${uuid}@${host}:443?encryption=none&security=tls&type=ws&host=${host}&path=%2Fproxy#Node-Random`;
+        const subUrl = `${protocol}//${host}/sub`;
+        const clashUrl = `${protocol}//${host}/sub?format=clash`;
+
+        document.getElementById('nodeLink').value = nodeUrl;
+        document.getElementById('subLink').value = subUrl;
+        document.getElementById('clashLink').value = clashUrl;
+
+        function copyText(elementId, btn) {
+            const input = document.getElementById(elementId);
+            input.select();
+            document.execCommand('copy');
+            const originalText = btn.innerText;
+            btn.innerText = '复制成功！';
+            btn.classList.add('success');
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.classList.remove('success');
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

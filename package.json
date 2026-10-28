@@ -1,0 +1,9 @@
+{
+  "name": "node-sub-proxy",
+  "version": "1.0.0",
+  "description": "Node Sub Proxy",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
