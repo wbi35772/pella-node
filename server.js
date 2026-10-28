@@ -48,41 +48,43 @@ exec('sh start.sh', (error) => {
   if (error) console.error(`Xray Error: ${error}`);
 });
 
-// 4. 动态生成本地静态订阅文件的核心函数
+// 4. 生成静态订阅文件（强制匹配 HTTPS 和 443 端口，供 Cloudflare 代理）
 function generateLocalSubFiles(host) {
-  const vlessLink = `vless://${UUID}@${host}:443?encryption=none&security=tls&type=ws&host=${host}&path=%2Fproxy#Node-Auto`;
+  // 清理掉 host 自带的端口号，强制走标准 443 端口和 https
+  const cleanHost = host.split(':')[0];
+  const vlessLink = `vless://${UUID}@${cleanHost}:443?encryption=none&security=tls&type=ws&host=${cleanHost}&path=%2Fproxy#Node-Cloudflare`;
   
-  // 生成 v2rayN Base64 订阅文件 (sub.txt)
+  // 生成 v2rayN Base64 订阅文件
   const base64Data = Buffer.from(vlessLink).toString('base64');
   fs.writeFileSync('sub.txt', base64Data);
 
-  // 生成 Clash 订阅文件 (clash.yaml)
+  // 生成 Clash 订阅文件
   const clashYaml = `
 proxies:
-  - name: "Node-Auto-Clash"
+  - name: "Node-CF-Clash"
     type: vless
-    server: ${host}
+    server: ${cleanHost}
     port: 443
     uuid: ${UUID}
     network: ws
     tls: true
-    sni: ${host}
+    sni: ${cleanHost}
+    skip-cert-verify: true
     ws-opts:
       path: "/proxy"
       headers:
-        Host: ${host}
+        Host: ${cleanHost}
 
 proxy-groups:
   - name: "🚀 节点选择"
     type: select
     proxies:
-      - "Node-Auto-Clash"
+      - "Node-CF-Clash"
 
 rules:
   - MATCH,🚀 节点选择
 `.trim();
   fs.writeFileSync('clash.yaml', clashYaml);
-  console.log(`[Info] Local subscription files (sub.txt, clash.yaml) updated for host: ${host}`);
 }
 
 // 5. 创建 Node.js 服务
@@ -92,28 +94,26 @@ const server = http.createServer((req, res) => {
   const pathname = urlObj.pathname;
   const format = urlObj.searchParams.get('format');
 
-  // 每次有外部访问时，顺便更新一次本地订阅文件（确保域名最新）
   generateLocalSubFiles(host);
 
-  // 健康检查响应
   if (pathname === '/healthz' || pathname === '/ping') {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
     res.end('OK');
     return;
   }
 
-  // 根目录：展示面板
+  // 根目录
   if (pathname === '/') {
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     if (fs.existsSync('index.html')) {
       let html = fs.readFileSync('index.html', 'utf8');
-      html = html.replace(/__UUID__/g, UUID).replace(/__HOST__/g, host);
+      html = html.replace(/__UUID__/g, UUID).replace(/__HOST__/g, host.split(':')[0]);
       res.end(html);
     } else {
       res.end(`<h1>Server is running. UUID: ${UUID}</h1>`);
     }
   } 
-  // /sub 路径：动态返回
+  // /sub 路径：正常通过 https 访问
   else if (pathname === '/sub') {
     if (format === 'clash') {
       res.writeHead(200, { 'Content-Type': 'text/yaml; charset=utf-8' });
@@ -144,7 +144,6 @@ server.on('upgrade', (req, socket, head) => {
 });
 
 server.listen(PORT, '0.0.0.0', () => {
-  // 启动时先用默认 host 生成一次本地文件
   generateLocalSubFiles('localhost');
   console.log(`Node Server is running on port ${PORT}, UUID: ${UUID}`);
 });
