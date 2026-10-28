@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Node 订阅与节点中心</title>
+    <title>多账号通用节点中心</title>
     <style>
         body { font-family: system-ui, sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 90%; max-width: 600px; }
@@ -19,15 +19,15 @@
 </head>
 <body>
     <div class="card">
-        <h2>🎉 节点与订阅中心</h2>
+        <h2>🎉 多账号通用节点中心</h2>
         
         <div class="box">
-            <label>当前随机 UUID：</label>
+            <label>当前独立随机 UUID：</label>
             <input type="text" id="uuid" value="__UUID__" readonly>
         </div>
 
         <div class="box">
-            <label>v2rayN / 单节点链接：</label>
+            <label>单节点链接：</label>
             <input type="text" id="nodeLink" readonly>
             <div class="btn-group">
                 <button onclick="copyText('nodeLink', this)">复制单节点</button>
@@ -43,7 +43,7 @@
         </div>
 
         <div class="box">
-            <label>Clash Verge / Mihomo 订阅地址 ( /sub?format=clash )：</label>
+            <label>Clash / Mihomo 订阅地址 ( /sub?format=clash )：</label>
             <input type="text" id="clashLink" readonly>
             <div class="btn-group">
                 <button onclick="copyText('clashLink', this)">复制 Clash 订阅</button>
@@ -55,8 +55,9 @@
         const host = window.location.host;
         const protocol = window.location.protocol;
         const uuid = "__UUID__";
+        const cleanHost = host.split(':')[0];
 
-        const nodeUrl = `vless://${uuid}@${host}:443?encryption=none&security=tls&type=ws&host=${host}&path=%2Fproxy#Node-Random`;
+        const nodeUrl = `vless://${uuid}@${cleanHost}:443?encryption=none&security=tls&type=ws&host=${cleanHost}&path=%2Fproxy#Node-${cleanHost.split('.')[0]}`;
         const subUrl = `${protocol}//${host}/sub`;
         const clashUrl = `${protocol}//${host}/sub?format=clash`;
 
