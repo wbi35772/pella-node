@@ -1,7 +1,7 @@
 {
-  "name": "node-sub-proxy",
+  "name": "node-auto-proxy",
   "version": "1.0.0",
-  "description": "Node Sub Proxy",
+  "description": "Multi-Account Auto Proxy",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
